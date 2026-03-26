@@ -1,0 +1,118 @@
+QGIS Processing Workflow – Subsidence Analysis
+
+---
+
+1. Import Raster
+
+* Load velocity raster: velocity_masked_mm.tif
+
+---
+
+2. Visualization
+
+* Renderer: Singleband pseudocolor
+* Color ramp: Blue–White–Red
+* Range:
+
+  * Minimum: -20 mm/year
+  * Maximum: +20 mm/year
+
+---
+
+3. Filtering (Noise Reduction)
+
+Raster Calculator expression:
+
+("velocity_clean@1" > -20 AND "velocity_clean@1" < 0) * "velocity_clean@1" / (("velocity_clean@1" > -20 AND "velocity_clean@1" < 0))
+
+Output:
+velocity_filtered.tif
+
+---
+
+4. Threshold Extraction (High Subsidence)
+
+Raster Calculator expression:
+
+"velocity_filtered@1" < -10
+
+Output:
+subsidence_mask.tif
+
+---
+
+5. Noise Removal (Sieve)
+
+Tool: Raster → Sieve
+
+Parameters:
+
+* Threshold: 200–500 pixels
+* Connectivity: 8
+
+---
+
+6. Raster to Polygon Conversion
+
+Tool:
+Raster → Conversion → Polygonize
+
+Input:
+subsidence_mask.tif
+
+Output:
+subsidence_zones.shp
+
+---
+
+7. Remove Small Polygons
+
+* Open attribute table
+* Delete polygons with small area (noise)
+
+---
+
+8. Dissolve Polygons
+
+Tool:
+Vector → Geoprocessing → Dissolve
+
+* Merge all connected polygons
+
+Output:
+final_subsidence_zones.shp
+
+---
+
+9. Zonal Statistics
+
+Tool:
+Raster → Zonal Statistics
+
+Input raster:
+velocity_filtered.tif
+
+Zone layer:
+final_subsidence_zones.shp
+
+Outputs:
+
+* Mean subsidence
+* Minimum subsidence
+* Maximum subsidence
+
+---
+
+10. Final Map Preparation
+
+* Overlay polygons on velocity raster
+* Add:
+
+  * Legend
+  * Scale bar
+  * North arrow
+  * Title
+
+---
+
+END OF WORKFLOW
